@@ -38,7 +38,8 @@ public class ConductorService extends JDialog implements ActionListener{
 	private JTextField nombre;
 	private JTextField apellido;
 	private JTextField vehiculo;
-	private JButton boton;
+	private JButton boton1;
+	private JButton boton2;
 	private Font f = new Font("Book Antiqua", Font.BOLD, 15);
 	private Font ff = new Font("Dialog", Font.PLAIN, 13);
 	private List <Conductor> conductores;
@@ -123,17 +124,23 @@ public class ConductorService extends JDialog implements ActionListener{
 		vehiculo.setBackground(new Color(241,246,94));
 		pan.add(vehiculo, c);		   
 		   
-		// botón crear conductor
+		// botones
 		JPanel pan2 = new JPanel();
 	    pan2.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 20));
 		pan2.setBackground(new Color(188,214,190));
-		boton = new JButton();
-		boton.setText("Crear Conductor");
-		boton.setFont(f);
-		boton.setBackground(new Color(218,150,33));
-		boton.addActionListener(this);
-		pan2.add(boton);   
-		   
+		boton1 = new JButton();
+		boton1.setText("Crear Conductor");
+		boton1.setFont(f);
+		boton1.setBackground(new Color(218,150,33));
+		boton1.addActionListener(this);
+		pan2.add(boton1);   
+		boton2 = new JButton();
+		boton2.setText("Listar Conductores");
+		boton2.setFont(f);
+		boton2.setBackground(new Color(218,150,33));
+		boton2.addActionListener(this);
+		pan2.add(boton2);
+		
 		// tabla
 	    String[] columnNames = {"Id", "Nombre", "Vehículo"};
 	    tableModel = new DefaultTableModel(columnNames, 0);
@@ -228,6 +235,53 @@ public class ConductorService extends JDialog implements ActionListener{
 	  		}
 	        
 	  		return;
-	    }
+	  	
+	  	// Saca un listado de conductores
+	    } else if (texto.equals("Listar Conductores")) {
+	    	// crea sessionFactory y session
+	    	StandardServiceRegistry ssr = new StandardServiceRegistryBuilder()
+	    	.configure("hibernate.cfg.xml")
+	  		.build();
+	  		
+	  		Metadata m = new MetadataSources(ssr)
+	  		.addAnnotatedClass(Conductor.class)
+	  		.getMetadataBuilder()
+	  		.build();
+	  		
+	  		SessionFactory sf = m.getSessionFactoryBuilder().build();
+	  		
+	  		Session s = sf.openSession();
+	  		
+	  		try {			
+	  			// comienza la transacción
+	  			s.beginTransaction();
+	  			  
+	  			// se consulta el listado
+	  			conductores = s.createQuery("from Conductor").getResultList();
+	  			  
+	  			// limpia el modelo actual de la tabla para evitar duplicados
+	  			tableModel.setRowCount(0);
+
+	  			// añade cada conductor al modelo de la tabla
+	  			for (Conductor cond : conductores) {
+	  				Object[] rowData = {cond.getId(), cond.getNombre(), cond.getVehiculo()};
+	  				tableModel.addRow(rowData);
+	  			}
+
+	  			// actualiza la tabla
+	  			conductorTable.repaint();
+	  		  
+	  		} catch (Exception e) {
+	  			// rollback ante alguna excepción
+	  			s.getTransaction().rollback();
+	  			JOptionPane.showMessageDialog(null, "No se ha podido crear el conductor", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			e.printStackTrace();			
+	  		} finally {
+	  			s.close();
+	  			sf.close();
+	  		}
+	        
+	  		return;	        
+    	}
 	}	
 }

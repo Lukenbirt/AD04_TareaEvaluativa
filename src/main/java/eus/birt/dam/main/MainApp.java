@@ -13,6 +13,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import eus.birt.dam.service.ConductorService;
+import eus.birt.dam.service.ViajeService;
 
 public class MainApp extends JFrame implements ActionListener {
 
@@ -23,10 +24,7 @@ public class MainApp extends JFrame implements ActionListener {
 	// Atributos
 	private JFrame ventana;
     private String[] menus = {"    CONDUCTORES    ", "    VIAJES    ", "    RESERVAS    ",  "    PASAJEROS    "};
-    private String[] submenusConductores = {"Crear Conductor"};
-    private String[] submenusViajes = {"Crear Viaje", "Buscar Viajes Disponibles", "Listar Viajes"};
-    private String[] submenusReservas = {"Crear Reserva", "Cancelar Reserva"};
-    private String[] submenusPasajeros = {"Crear Pasajero"};
+    private String[] submenus = {"Conductores", "Viajes", "Reservas",  "Pasajeros"};
     private Font f = new Font("Book Antiqua", Font.BOLD, 18);
     private Font ff = new Font("Book Antiqua", Font.BOLD, 16);    
           
@@ -55,47 +53,10 @@ public class MainApp extends JFrame implements ActionListener {
     		JMenu unMenu = new JMenu(menus[i]);
     		unMenu.setFont(f);
     		barra.add(unMenu);
-         
-    		// submenus conductores
-    		if(i == 0) {                
-    			for(int j = 0; j < submenusConductores.length; j++) {
-    				JMenuItem unSubmenu = new JMenuItem(submenusConductores[j]);
-    				unSubmenu.setFont(ff);
-    				unMenu.add(unSubmenu);
-    				unSubmenu.addActionListener(this);
-    			}                      
-    		}
-         
-    		// submenus viajes
-    		if(i == 1) {            
-    			for(int j = 0; j < submenusViajes.length; j++) {
-    				JMenuItem unSubmenu = new JMenuItem(submenusViajes[j]);
-    				unSubmenu.setFont(ff);
-    				unMenu.add(unSubmenu);
-    				unSubmenu.addActionListener(this);
-    			}                         
-    		}
-         
-    		// submenus reservas
-    		if(i == 2) {         
-    			for(int j = 0; j < submenusReservas.length; j++) {
-    				JMenuItem unSubmenu = new JMenuItem(submenusReservas[j]);
-    				unSubmenu.setFont(ff);
-    				unMenu.add(unSubmenu);
-    				unSubmenu.addActionListener(this);
-    			}                         
-    		}
-         
-    		// submenus pasajeros
-    		if(i == 3) {             
-    			for(int j = 0; j < submenusPasajeros.length; j++) {
-    				JMenuItem unSubmenu = new JMenuItem(submenusPasajeros[j]);
-    				unSubmenu.setFont(ff);
-    				unMenu.add(unSubmenu);
-    				unSubmenu.addActionListener(this);
-    			}                         
-    		}
-         
+    		JMenuItem unSubmenu = new JMenuItem(submenus[i]);
+    		unSubmenu.setFont(ff);
+    		unMenu.add(unSubmenu);
+    		unSubmenu.addActionListener(this);
     	}
             
     	ventana.setJMenuBar(barra);
@@ -107,24 +68,24 @@ public class MainApp extends JFrame implements ActionListener {
     	JMenuItem botonPulsado = (JMenuItem) event.getSource();
     	String texto = botonPulsado.getText();
       
-    	// abre la ventana para crear un conductor
-    	if (texto.equals("Crear Conductor")) {
+    	// abre la ventana de conductores
+    	if (texto.equals("Conductores")) {
     		ConductorService cs = new ConductorService (ventana, false);
     		cs.setVisible(true);
     		return;
+		
+    	// abre la ventana de viajes
+    	} else if (texto.equals("Viajes")) {
+    		ViajeService vs = new ViajeService (ventana, false);
+    		vs.setVisible(true);
+    		return;
+    	
+    	// abre la ventana de reservas
+    	} else if (texto.equals("Reservas")) {
+		
+    	// abre la ventana de pasajeros
+    	} else if (texto.equals("Pasajeros")) {
 			
-    	} else if (texto.equals("Crear Viaje")) {
-			
-    	} else if (texto.equals("Buscar Viajes Disponibles")) {
-			        
-    	} else if (texto.equals("Crear Pasajero")) {
-			
-    	} else if (texto.equals("Crear Reserva")) {
-			
-    	} else if (texto.equals("Cancelar Reserva")) {
-			
-    	} else if (texto.equals("Listar Viajes")) {
-
     	}
     }    
 }
