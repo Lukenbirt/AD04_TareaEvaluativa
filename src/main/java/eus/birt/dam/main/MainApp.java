@@ -13,6 +13,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import eus.birt.dam.service.ConductorService;
+import eus.birt.dam.service.PasajeroService;
 import eus.birt.dam.service.ViajeService;
 
 public class MainApp extends JFrame implements ActionListener {
@@ -85,7 +86,9 @@ public class MainApp extends JFrame implements ActionListener {
 		
     	// abre la ventana de pasajeros
     	} else if (texto.equals("Pasajeros")) {
-			
+    		PasajeroService ps = new PasajeroService (ventana, false);
+    		ps.setVisible(true);
+    		return;
     	}
     }    
 }
