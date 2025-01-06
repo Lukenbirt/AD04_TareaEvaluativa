@@ -41,8 +41,7 @@ public class Viaje {
 	// Constructores
 	public Viaje() {}
 	
-	public Viaje(int id, String ciudadDestino, String ciudadOrigen, LocalDateTime fechaHora, int plazasDisponibles, Conductor conductor) {
-		this.id = id;
+	public Viaje(String ciudadDestino, String ciudadOrigen, LocalDateTime fechaHora, int plazasDisponibles, Conductor conductor) {
 		this.ciudadDestino = ciudadDestino;
 		this.ciudadOrigen = ciudadOrigen;
 		this.fechaHora = fechaHora;

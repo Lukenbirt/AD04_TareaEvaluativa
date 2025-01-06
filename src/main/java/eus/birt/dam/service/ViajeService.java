@@ -10,6 +10,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -228,7 +231,7 @@ public class ViajeService extends JDialog implements ActionListener{
 		JButton botonPulsado = (JButton) event.getSource();
 	    String texto = botonPulsado.getText();
 	      
-	    // Crea un viaje
+	    // crea un viaje
 	    if (texto.equals("Crear Viaje")) {
 	    	  
 	    	// crea sessionFactory y session
@@ -247,10 +250,65 @@ public class ViajeService extends JDialog implements ActionListener{
 	  		Session s = sf.openSession();
 	  		
 	  		try {
+	  			String nombreDestino = destino.getText();
+	  			String nombreOrigen = origen.getText();
+	  			String nombreFecha = fecha.getText();
+	  			String nombreHora = hora.getText();
+	  			String numeroPlazas = plazasDisponibles.getText();
+	  			String idConductor = conductor.getText();
 	  			
+	  			 // convertimos los strings a LocalDate y LocalTime
+	  	        LocalDate localDate = LocalDate.parse(nombreFecha);
+	  	        LocalTime localTime = LocalTime.parse(nombreHora);
+	  	        
+	  	        // combinamos LocalDate y LocalTime en un LocalDateTime
+	  	        LocalDateTime fechaHora = LocalDateTime.of(localDate, localTime);
+	  	        
+	  	        // convertimos a int las plazas disponibles y el id del conductor
+	  	        int plazasDisp = Integer.parseInt(numeroPlazas);
+	  			int conduc = Integer.parseInt(idConductor);
+
+	  			// comienza la transacción
+	  			s.beginTransaction();
+	  			
+	  	        // buscamos el objeto conductor con el id aportado por el usuario
+	  			Conductor cond = s.get(Conductor.class, conduc);
+	  	        
+	  	        // creamos el objeto Viaje
+	  	        Viaje tempViaje = new Viaje(nombreDestino, nombreOrigen, fechaHora, plazasDisp, cond);			
+	  			
+	  			// guarda el objeto Viaje
+	  			s.save(tempViaje);
+	  			
+	  			// hace commit de la transacción
+	  			s.getTransaction().commit();
+	  			  
+	  			// refresh para hacer una select
+	  			s.refresh(tempViaje);
+	  			viajes = s.createQuery("from Viaje").getResultList();
+	  			  
+	  			// limpia el modelo actual de la tabla para evitar duplicados
+	  			tableModel.setRowCount(0);
+
+	  			// añade cada viaje al modelo de la tabla
+	  			for (Viaje viaj : viajes) {
+	  				Object[] rowData = {viaj.getId(), viaj.getCiudadDestino(), viaj.getCiudadOrigen(), viaj.getFechaHora(), viaj.getPlazasDisponibles(), viaj.getConductor().getNombre()};
+	  				tableModel.addRow(rowData);
+	  			}
+
+	  			// actualiza la tabla
+	  			viajeTable.repaint();
+	  			  
+	  			// se dejan en blanco los campos
+	  			destino.setText("");
+	  			origen.setText("");
+	  			fecha.setText("");
+	  			hora.setText("");
+	  			plazasDisponibles.setText("");
+	  			conductor.setText("");
 	  			  
 	  			// muestra mensaje de confirmación
-	  			JOptionPane.showMessageDialog(null, "Viaje creado", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			JOptionPane.showMessageDialog(null, "Conductor creado", "Información", JOptionPane.INFORMATION_MESSAGE);
 	  		  
 	  		} catch (Exception e) {
 	  			// rollback ante alguna excepción
@@ -263,8 +321,11 @@ public class ViajeService extends JDialog implements ActionListener{
 	  		}
 	        
 	  		return;
+	  		
+	  	// saca un listado con los viajes disponibles
     	} else if (texto.equals("Buscar Viajes Disponibles")) {
-	        
+	    
+    	// saca un listado con todos los viajes
     	} else if (texto.equals("Listar Viajes")) {
 	    	// crea sessionFactory y session
 	    	StandardServiceRegistry ssr = new StandardServiceRegistryBuilder()
