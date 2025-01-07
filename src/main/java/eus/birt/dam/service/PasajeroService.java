@@ -56,7 +56,7 @@ public class PasajeroService extends JDialog implements ActionListener{
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 	    
 	    // situa la ventana
-	    setBounds((ancho / 2) - (this.getWidth() / 5), (alto / 8) - (this.getHeight() / 13), 630, 680);
+	    setBounds((ancho / 2) - (this.getWidth() / 5), (alto / 8) - (this.getHeight() / 13), 630, 650);
 	    setTitle("PASAJEROS");
 	    
 	    // crea la interfaz

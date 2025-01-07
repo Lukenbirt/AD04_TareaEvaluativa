@@ -45,6 +45,7 @@ public class ReservaService extends JDialog implements ActionListener{
 	private JTextField numeroPlazas;
 	private JTextField pasajero;
 	private JTextField viaje;
+	private JTextField reserva;
 	private JButton boton1;
 	private JButton boton2;
 	private JButton boton3;
@@ -64,7 +65,7 @@ public class ReservaService extends JDialog implements ActionListener{
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 	    
 	    // situa la ventana
-	    setBounds((ancho / 3) - (this.getWidth() / 5), (alto / 6) - (this.getHeight() / 13), 630, 680);
+	    setBounds((ancho / 3) - (this.getWidth() / 5), (alto / 6) - (this.getHeight() / 13), 630, 720);
 	    setTitle("RESERVAS");
 	    
 	    // crea la interfaz
@@ -148,6 +149,24 @@ public class ReservaService extends JDialog implements ActionListener{
 		viaje.setEditable(true);
 		viaje.setBackground(new Color(241,246,94));
 		pan.add(viaje, c);		
+		
+		
+		// id reserva
+		JLabel re = new JLabel("Código de reserva (solo para cancelarla):");         
+		re.setFont(f);
+		c.insets = new Insets(7,5,7,5);
+		c.gridx = 1;
+		c.gridy = 5;
+		c.anchor = GridBagConstraints.WEST;
+		pan.add(re, c);     
+		reserva = new JTextField(10);
+		reserva.setFont(ff);         
+		c.gridx = 2;                          
+		c.gridy = 5;                         
+		c.anchor = GridBagConstraints.WEST;
+		reserva.setEditable(true);
+		reserva.setBackground(new Color(34,202,202));
+		pan.add(reserva, c);
 		
 		// botones
 		JPanel pan2 = new JPanel();
@@ -286,6 +305,7 @@ public class ReservaService extends JDialog implements ActionListener{
 	  				numeroPlazas.setText("");
 	  				pasajero.setText("");
 	  				viaje.setText("");
+	  				reserva.setText("");
 	  			  
 	  				// muestra mensaje de confirmación
 	  				JOptionPane.showMessageDialog(null, "Reserva creada", "Información", JOptionPane.INFORMATION_MESSAGE);
@@ -309,7 +329,87 @@ public class ReservaService extends JDialog implements ActionListener{
 
 	    // saca un listado con todos los viajes
 	    } else if (texto.equals("Cancelar Reserva")) {
-	    	
+	    	// crea sessionFactory y session
+	    	StandardServiceRegistry ssr = new StandardServiceRegistryBuilder()
+	    	.configure("hibernate.cfg.xml")
+	  		.build();
+	  		
+	  		Metadata m = new MetadataSources(ssr)
+	  		.addAnnotatedClass(Viaje.class)
+	  		.addAnnotatedClass(Pasajero.class)
+	  		.addAnnotatedClass(Reserva.class)
+	  		.addAnnotatedClass(Conductor.class)
+	  		.getMetadataBuilder()
+	  		.build();
+	  		
+	  		SessionFactory sf = m.getSessionFactoryBuilder().build();
+	  		
+	  		Session s = sf.openSession();
+	  		
+	  		try {
+	  			
+	  			// identificamos el id de la reserva a borrar
+	  			String rese = reserva.getText();
+	  			int num = Integer.parseInt(rese);
+	  			
+	  			// comienza la transacción
+	  			s.beginTransaction();	
+	  			
+	  			// se identifica la reserva
+	  			Reserva miReserva = s.get(Reserva.class, num);
+	  			
+	  			// se identifica el viaje y se calculan las plazas que van a quedar disponibles
+	  			Viaje miViaje = miReserva.getViaje();
+	  			int plazasReserva = miReserva.getNumeroPlazasReservadas();
+	  			int plazasDisponibles = miViaje.getPlazasDisponibles();
+	  			int calculo = plazasDisponibles + plazasReserva;
+	  			
+  				// actualiza las plazas disponibles en el viaje
+  				miViaje.setPlazasDisponibles(calculo);
+	  			
+	  			// se borra la reserva
+	  			s.delete(miReserva);  			
+	  			
+  				// hace commit de la transacción
+  				s.getTransaction().commit();
+  				
+	  			// se consulta el listado
+	  			reservas = s.createQuery("from Reserva").getResultList();
+	  			
+	  			// limpia el modelo actual de la tabla para evitar duplicados
+	  			tableModel.setRowCount(0);
+
+	  			// añade cada reserva al modelo de la tabla
+	  			for (Reserva res : reservas) {
+	  				Object[] rowData = {res.getId(), res.getFechaReserva(), res.getNumeroPlazasReservadas(), res.getPasajero().getNombre(), res.getViaje().getCiudadDestino()};
+	  				tableModel.addRow(rowData);
+	  			}
+
+	  			// actualiza la tabla
+	  			reservaTable.repaint();
+	  			
+  				// se dejan en blanco los campos
+  				fechaReserva.setText("");
+  				numeroPlazas.setText("");
+  				pasajero.setText("");
+  				viaje.setText("");
+  				reserva.setText("");
+  			  
+  				// muestra mensaje de confirmación
+  				JOptionPane.showMessageDialog(null, "Reserva eliminada", "Información", JOptionPane.INFORMATION_MESSAGE);
+  				
+	  		} catch (Exception e) {
+	  			// rollback ante alguna excepción
+	  			s.getTransaction().rollback();
+	  			JOptionPane.showMessageDialog(null, "No se ha podido crear la reserva", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			e.printStackTrace();			
+	  		} finally {
+	  			s.close();
+	  			sf.close();
+	  		}
+	        
+	  		return;
+	  		
     	// saca un listado con todos los viajes
     	} else if (texto.equals("Listar Reservas")) {
     		

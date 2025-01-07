@@ -56,7 +56,7 @@ public class ConductorService extends JDialog implements ActionListener{
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 	    
 	    // situa la ventana
-	    setBounds((ancho / 6) - (this.getWidth() / 5), (alto / 4) - (this.getHeight() / 13), 630, 680);
+	    setBounds((ancho / 6) - (this.getWidth() / 5), (alto / 4) - (this.getHeight() / 13), 630, 650);
 	    setTitle("CONDUCTORES");
 	    
 	    // crea la interfaz
