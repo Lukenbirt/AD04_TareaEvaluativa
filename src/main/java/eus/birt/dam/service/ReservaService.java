@@ -208,7 +208,7 @@ public class ReservaService extends JDialog implements ActionListener{
 	      
 	    // crea un viaje
 	    if (texto.equals("Crear Reserva")) {
-	    	  /*
+	    	
 	    	// crea sessionFactory y session
 	    	StandardServiceRegistry ssr = new StandardServiceRegistryBuilder()
 	    	.configure("hibernate.cfg.xml")
@@ -217,6 +217,8 @@ public class ReservaService extends JDialog implements ActionListener{
 	  		Metadata m = new MetadataSources(ssr)
 	  		.addAnnotatedClass(Viaje.class)
 	  		.addAnnotatedClass(Conductor.class)
+	  		.addAnnotatedClass(Pasajero.class)
+	  		.addAnnotatedClass(Reserva.class)
 	  		.getMetadataBuilder()
 	  		.build();
 	  		
@@ -225,77 +227,85 @@ public class ReservaService extends JDialog implements ActionListener{
 	  		Session s = sf.openSession();
 	  		
 	  		try {
-	  			String nombreDestino = destino.getText();
-	  			String nombreOrigen = origen.getText();
-	  			String nombreFecha = fecha.getText();
-	  			String nombreHora = hora.getText();
-	  			String numeroPlazas = plazasDisponibles.getText();
-	  			String idConductor = conductor.getText();
+	  			String fec = fechaReserva.getText();
+	  			String pla = numeroPlazas.getText();
+	  			String pas = pasajero.getText();
+	  			String via = viaje.getText();
 	  			
-	  			 // convertimos los strings a LocalDate y LocalTime
-	  	        LocalDate localDate = LocalDate.parse(nombreFecha);
-	  	        LocalTime localTime = LocalTime.parse(nombreHora);
+	  			 // convertimos el string a LocalDate
+	  	        LocalDate fecha = LocalDate.parse(fec);
 	  	        
-	  	        // combinamos LocalDate y LocalTime en un LocalDateTime
-	  	        LocalDateTime fechaHora = LocalDateTime.of(localDate, localTime);
-	  	        
-	  	        // convertimos a int las plazas disponibles y el id del conductor
-	  	        int plazasDisp = Integer.parseInt(numeroPlazas);
-	  			int conduc = Integer.parseInt(idConductor);
+	  	        // convertimos a int las plazas reservadas, y los id de pasajero y viaje
+	  	        int plazasRes = Integer.parseInt(pla);
+	  	        int id_pa = Integer.parseInt(pas);
+	  			int id_vi = Integer.parseInt(via);
 
 	  			// comienza la transacción
 	  			s.beginTransaction();
 	  			
-	  	        // buscamos el objeto conductor con el id aportado por el usuario
-	  			Conductor cond = s.get(Conductor.class, conduc);
+	  	        // buscamos los objetos pasajero y viaje con los id aportados por el usuario
+	  			Pasajero pasaje = s.get(Pasajero.class, id_pa);
+	  			Viaje viaj = s.get(Viaje.class, id_vi);
 	  	        
-	  	        // creamos el objeto Viaje
-	  	        Viaje tempViaje = new Viaje(nombreDestino, nombreOrigen, fechaHora, plazasDisp, cond);			
-	  			
-	  			// guarda el objeto Viaje
-	  			s.save(tempViaje);
-	  			
-	  			// hace commit de la transacción
-	  			s.getTransaction().commit();
+	  	        // creamos el objeto Reserva
+	  	        Reserva tempReserva = new Reserva(fecha, plazasRes, pasaje, viaj);
+	  	        
+	  	        // comprobar que hay plazas disponibles en el viaje seleccionado
+	  	        int num = viaj.getPlazasDisponibles();
+	  	        int calculo = num - plazasRes;
+	  	        
+	  	        // si hay plazas disponibles
+	  	        if (calculo > -1) {
+	  				// guarda el objeto Reserva
+	  				s.save(tempReserva);
+	  				
+	  				// actualiza las plazas disponibles en el viaje
+	  				viaj.setPlazasDisponibles(calculo);
+	  				
+	  				// hace commit de la transacción
+	  				s.getTransaction().commit();
 	  			  
-	  			// refresh para hacer una select
-	  			s.refresh(tempViaje);
-	  			viajes = s.createQuery("from Viaje").getResultList();
+	  				// refresh para hacer una select
+	  				s.refresh(tempReserva);
+	  				reservas = s.createQuery("from Reserva").getResultList();
 	  			  
-	  			// limpia el modelo actual de la tabla para evitar duplicados
-	  			tableModel.setRowCount(0);
+	  				// limpia el modelo actual de la tabla para evitar duplicados
+	  				tableModel.setRowCount(0);
 
-	  			// añade cada viaje al modelo de la tabla
-	  			for (Viaje viaj : viajes) {
-	  				Object[] rowData = {viaj.getId(), viaj.getCiudadDestino(), viaj.getCiudadOrigen(), viaj.getFechaHora(), viaj.getPlazasDisponibles(), viaj.getConductor().getNombre()};
-	  				tableModel.addRow(rowData);
-	  			}
+	  				// añade cada reserva al modelo de la tabla
+	  				for (Reserva res : reservas) {
+	  					Object[] rowData = {res.getId(), res.getFechaReserva(), res.getNumeroPlazasReservadas(), res.getPasajero().getNombre(), res.getViaje().getCiudadDestino()};
+	  					tableModel.addRow(rowData);
+	  				}
 
-	  			// actualiza la tabla
-	  			viajeTable.repaint();
+	  				// actualiza la tabla
+	  				reservaTable.repaint();
 	  			  
-	  			// se dejan en blanco los campos
-	  			destino.setText("");
-	  			origen.setText("");
-	  			fecha.setText("");
-	  			hora.setText("");
-	  			plazasDisponibles.setText("");
-	  			conductor.setText("");
+	  				// se dejan en blanco los campos
+	  				fechaReserva.setText("");
+	  				numeroPlazas.setText("");
+	  				pasajero.setText("");
+	  				viaje.setText("");
 	  			  
-	  			// muestra mensaje de confirmación
-	  			JOptionPane.showMessageDialog(null, "Conductor creado", "Información", JOptionPane.INFORMATION_MESSAGE);
-	  		  
+	  				// muestra mensaje de confirmación
+	  				JOptionPane.showMessageDialog(null, "Reserva creada", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			
+	  	        } else {
+	  			// si no hay plazas disponibles
+	  			JOptionPane.showMessageDialog(null, "No se puede crear la reserva.\nViaje sin plazas disponibles.", "Información", JOptionPane.INFORMATION_MESSAGE);	
+	  	        }
+	  	        
 	  		} catch (Exception e) {
 	  			// rollback ante alguna excepción
 	  			s.getTransaction().rollback();
-	  			JOptionPane.showMessageDialog(null, "No se ha podido crear el viaje", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			JOptionPane.showMessageDialog(null, "No se ha podido crear la reserva", "Información", JOptionPane.INFORMATION_MESSAGE);
 	  			e.printStackTrace();			
 	  		} finally {
 	  			s.close();
 	  			sf.close();
 	  		}
 	        
-	  		return;*/
+	  		return;
 
 	    // saca un listado con todos los viajes
 	    } else if (texto.equals("Cancelar Reserva")) {

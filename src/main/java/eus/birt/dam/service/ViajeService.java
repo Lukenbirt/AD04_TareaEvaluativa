@@ -317,7 +317,7 @@ public class ViajeService extends JDialog implements ActionListener{
 	  			conductor.setText("");
 	  			  
 	  			// muestra mensaje de confirmación
-	  			JOptionPane.showMessageDialog(null, "Conductor creado", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			JOptionPane.showMessageDialog(null, "Viaje creado", "Información", JOptionPane.INFORMATION_MESSAGE);
 	  		  
 	  		} catch (Exception e) {
 	  			// rollback ante alguna excepción
