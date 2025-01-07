@@ -56,8 +56,8 @@ public class PasajeroService extends JDialog implements ActionListener{
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 	    
 	    // situa la ventana
-	    setBounds((ancho / 5) - (this.getWidth() / 5), (alto / 7) - (this.getHeight() / 13), 1030, 648);
-	    setTitle("CREAR PASAJERO");
+	    setBounds((ancho / 2) - (this.getWidth() / 5), (alto / 8) - (this.getHeight() / 13), 630, 680);
+	    setTitle("PASAJEROS");
 	    
 	    // crea la interfaz
 	    añadirComponentes();
@@ -81,7 +81,7 @@ public class PasajeroService extends JDialog implements ActionListener{
 		c.gridy = 1;                           // nº de fila
 		c.anchor = GridBagConstraints.WEST;    // donde se coloca el componente dentro de la celda
 		pan.add(nombrePasajero, c);     
-		nombre = new JTextField(15);
+		nombre = new JTextField(12);
 		nombre.setFont(ff);         
 		c.gridx = 2;                          
 		c.gridy = 1;                         
@@ -98,7 +98,7 @@ public class PasajeroService extends JDialog implements ActionListener{
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		pan.add(apellidoPasajero, c);     
-		apellido = new JTextField(40);
+		apellido = new JTextField(22);
 		apellido.setFont(ff);         
 		c.gridx = 2;                          
 		c.gridy = 2;                         
@@ -115,7 +115,7 @@ public class PasajeroService extends JDialog implements ActionListener{
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		pan.add(emailPasajero, c);     
-		email = new JTextField(40);
+		email = new JTextField(32);
 		email.setFont(ff);         
 		c.gridx = 2;                          
 		c.gridy = 3;                         
@@ -145,13 +145,22 @@ public class PasajeroService extends JDialog implements ActionListener{
 	    String[] columnNames = {"Id", "Nombre", "E-mail"};
 	    tableModel = new DefaultTableModel(columnNames, 0);
 	    pasajeroTable = new JTable(tableModel);
+	    
 	    // crea un renderizador centrado
 	    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 	    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+	    
 	    // aplica el renderizador a todas las columnas
 	    for (int i = 0; i < pasajeroTable.getColumnModel().getColumnCount(); i++) {
 	        pasajeroTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
 	    }
+	    
+	    // configuración del ancho de las columnas
+	    int[] columnWidths = {20, 200, 300};
+	    for (int i = 0; i < columnWidths.length; i++) {
+	        pasajeroTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+	    }
+	    
 	    JScrollPane scrollPane = new JScrollPane(pasajeroTable);
 		   
 		// añado los paneles al Layout

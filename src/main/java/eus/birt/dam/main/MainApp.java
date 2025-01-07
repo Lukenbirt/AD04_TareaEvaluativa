@@ -14,6 +14,7 @@ import javax.swing.JMenuItem;
 
 import eus.birt.dam.service.ConductorService;
 import eus.birt.dam.service.PasajeroService;
+import eus.birt.dam.service.ReservaService;
 import eus.birt.dam.service.ViajeService;
 
 public class MainApp extends JFrame implements ActionListener {
@@ -83,7 +84,10 @@ public class MainApp extends JFrame implements ActionListener {
     	
     	// abre la ventana de reservas
     	} else if (texto.equals("Reservas")) {
-		
+    		ReservaService rs = new ReservaService (ventana, false);
+    		rs.setVisible(true);
+    		return;
+    		
     	// abre la ventana de pasajeros
     	} else if (texto.equals("Pasajeros")) {
     		PasajeroService ps = new PasajeroService (ventana, false);

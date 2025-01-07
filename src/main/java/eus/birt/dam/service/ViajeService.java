@@ -64,8 +64,8 @@ public class ViajeService extends JDialog implements ActionListener{
 	    int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
 	    
 	    // situa la ventana
-	    setBounds((ancho / 5) - (this.getWidth() / 5), (alto / 7) - (this.getHeight() / 13), 1030, 688);
-	    setTitle("CREAR VIAJE");
+	    setBounds((ancho / 4) - (this.getWidth() / 5), (alto / 5) - (this.getHeight() / 13), 830, 680);
+	    setTitle("VIAJES");
 	    
 	    // crea la interfaz
 	    añadirComponentes();
@@ -210,13 +210,22 @@ public class ViajeService extends JDialog implements ActionListener{
 	    String[] columnNames = {"Id", "Destino", "Origen", "Fecha/Hora", "Plazas dispon.", "Conductor"};
 	    tableModel = new DefaultTableModel(columnNames, 0);
 	    viajeTable = new JTable(tableModel);
+	    
 	    // crea un renderizador centrado
 	    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 	    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+	    
 	    // aplica el renderizador a todas las columnas
 	    for (int i = 0; i < viajeTable.getColumnModel().getColumnCount(); i++) {
 	        viajeTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
 	    }
+	    
+	    // configuración del ancho de las columnas
+	    int[] columnWidths = {20, 80, 80, 60, 20, 200};
+	    for (int i = 0; i < columnWidths.length; i++) {
+	        viajeTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+	    }
+	    
 	    JScrollPane scrollPane = new JScrollPane(viajeTable);
 		   
 		// añado los paneles al Layout
@@ -324,7 +333,52 @@ public class ViajeService extends JDialog implements ActionListener{
 	  		
 	  	// saca un listado con los viajes disponibles
     	} else if (texto.equals("Buscar Viajes Disponibles")) {
-	    
+	    	// crea sessionFactory y session
+	    	StandardServiceRegistry ssr = new StandardServiceRegistryBuilder()
+	    	.configure("hibernate.cfg.xml")
+	  		.build();
+	  		
+	  		Metadata m = new MetadataSources(ssr)
+	  		.addAnnotatedClass(Viaje.class)
+	  		.addAnnotatedClass(Conductor.class)
+	  		.getMetadataBuilder()
+	  		.build();
+	  		
+	  		SessionFactory sf = m.getSessionFactoryBuilder().build();
+	  		
+	  		Session s = sf.openSession();
+	  		
+	  		try {
+	  			// comienza la transacción
+	  			s.beginTransaction();
+	  			
+	  			// se consulta el listado
+	  			viajes = s.createQuery("from Viaje v where v.plazasDisponibles > 0").getResultList();
+	  			
+	  			// limpia el modelo actual de la tabla para evitar duplicados
+	  			tableModel.setRowCount(0);
+
+	  			// añade cada conductor al modelo de la tabla
+	  			for (Viaje viaj : viajes) {
+	  				Object[] rowData = {viaj.getId(), viaj.getCiudadDestino(), viaj.getCiudadOrigen(), viaj.getFechaHora(), viaj.getPlazasDisponibles(), viaj.getConductor().getNombre()};
+	  				tableModel.addRow(rowData);
+	  			}
+
+	  			// actualiza la tabla
+	  			viajeTable.repaint();
+	  		  
+	  		} catch (Exception e) {
+	  			// rollback ante alguna excepción
+	  			s.getTransaction().rollback();
+	  			JOptionPane.showMessageDialog(null, "No se ha podido crear el viaje", "Información", JOptionPane.INFORMATION_MESSAGE);
+	  			e.printStackTrace();			
+	  		} finally {
+	  			s.close();
+	  			sf.close();
+	  		}
+	        
+	  		return;
+	  		
     	// saca un listado con todos los viajes
     	} else if (texto.equals("Listar Viajes")) {
 	    	// crea sessionFactory y session
